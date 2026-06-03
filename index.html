@@ -1994,16 +1994,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // ==========================================
-        // ⚠️ API KEYS CONFIGURATION (BOHOT ZAROORI) ⚠️
-        // ==========================================
-        
-        const GROQ_API_KEY = "YAHAN_APNI_GROQ_API_KEY_DALEIN"; 
-        
         const CLOUDINARY_CLOUD_NAME = "dxeuzdwkz"; 
         const CLOUDINARY_UPLOAD_PRESET = "Muskan.ai"; 
-
-        // ==========================================
 
         function forceHideSplash() {
             let splash = document.getElementById('splashScreen'); 
@@ -2038,14 +2030,14 @@
         
         const loaderMessages = ["Allocating GPUs...", "Applying cinematic effects...", "Refining intricate details...", "Running diffusion models...", "Perfecting the composition...", "Almost ready..."];
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDkHI7a9kqi8kq-pJ01nmnqgL3NC7IyYxo",
-            authDomain: "shri-mitra.firebaseapp.com",
-            databaseURL: "https://shri-mitra-default-rtdb.firebaseio.com",
-            projectId: "shri-mitra",
-            storageBucket: "shri-mitra.firebasestorage.app",
-            messagingSenderId: "549329094096",
-            appId: "1:549329094096:web:829c419e9ff1332332e5d5"
+        const firebaseConfig = { 
+            apiKey: "AIzaSyD1ALXTuFnD9CuZWJmqW8VN3IFwl5KKuDM", 
+            authDomain: "login-416ce.firebaseapp.com", 
+            databaseURL: "https://login-416ce-default-rtdb.firebaseio.com", 
+            projectId: "login-416ce", 
+            storageBucket: "login-416ce.firebasestorage.app", 
+            messagingSenderId: "668988371049", 
+            appId: "1:668988371049:web:8e62a795b8392cb52fb2f8" 
         };
         
         if (!firebase.apps.length) { 
@@ -2146,7 +2138,7 @@
                 
                 loadDiscover(); 
                 loadVault();
-                loadChatHistory(safeUid); 
+                loadChatHistory(safeUid);
                 
                 if(!isAutoLogin) showToast("Welcome " + n + "!", "success");
             } catch(error) { console.error("Login Parsing Error:", error); }
@@ -2263,7 +2255,6 @@
 
         let isChatting = false;
 
-        // --- FIXED: PERMANENT CHAT LOAD LOGIC ---
         function loadChatHistory(uid) {
             db.ref(`users/${uid}/chats`).once('value', sn => {
                 let hist = document.getElementById('chatHistory');
@@ -2283,21 +2274,15 @@
             });
         }
 
-        // --- FIXED: GROQ API CHATBOT ---
         async function sendChatMessage() {
             if(isChatting || !currentUser) return;
-            if(GROQ_API_KEY === "YAHAN_APNI_GROQ_API_KEY_DALEIN") {
-                return showToast("Please setup Groq API Key in code!", "error");
-            }
             
             let input = document.getElementById('chatInput'); let text = input.value.trim(); if(!text) return;
             isChatting = true; let hist = document.getElementById('chatHistory');
             
-            // Add to UI immediately
             hist.innerHTML += `<div class="msg user"><div class="msg-avatar"><i class="fa-solid fa-user"></i></div><div class="msg-bubble">${text}</div></div>`; 
             input.value = ''; hist.scrollTo({ top: hist.scrollHeight, behavior: 'smooth' });
             
-            // Save to Firebase
             db.ref(`users/${currentUser.uid}/chats`).push({ role: 'user', content: text, timestamp: firebase.database.ServerValue.TIMESTAMP });
             
             let typingId = 'typing_' + Date.now(); 
@@ -2305,37 +2290,29 @@
             hist.scrollTo({ top: hist.scrollHeight, behavior: 'smooth' });
 
             try {
-                let res = await fetch('https://api.groq.com/openai/v1/chat/completions', { 
+                let res = await fetch(`${BACKEND_URL}/api/fastchat`, { 
                     method: 'POST', 
-                    headers: { 
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${GROQ_API_KEY}`
-                    }, 
+                    headers: { "Content-Type": "application/json" }, 
                     body: JSON.stringify({ 
-                        model: "llama3-8b-8192",
-                        messages: [
-                            { role: "system", content: "You are Muskaan.ai, a highly advanced, concise, and professional creative studio assistant. Keep responses helpful but reasonably short." },
-                            { role: "user", content: text }
-                        ]
+                        systemPrompt: "You are Muskaan.ai, a highly advanced, concise, and professional creative studio assistant. Keep responses helpful but reasonably short.",
+                        userPrompt: text 
                     }) 
                 });
                 
-                if(!res.ok) throw new Error("Groq API Error");
+                if(!res.ok) throw new Error("Backend API Error");
                 let responseData = await res.json();
                 let reply = responseData.choices[0].message.content;
                 
                 document.getElementById(typingId).remove(); 
                 speakText(reply);
                 
-                // Add AI reply to UI
                 let formatted = reply.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\n/g, '<br>');
                 hist.innerHTML += `<div class="msg ai"><div class="msg-avatar"><i class="fa-solid fa-sparkles"></i></div><div class="msg-bubble">${formatted}</div></div>`; 
                 
-                // Save to Firebase
                 db.ref(`users/${currentUser.uid}/chats`).push({ role: 'ai', content: reply, timestamp: firebase.database.ServerValue.TIMESTAMP });
                 
             } catch (err) {
-                document.getElementById(typingId).remove(); hist.innerHTML += `<div class="msg ai"><div class="msg-avatar"><i class="fa-solid fa-triangle-exclamation" style="color:#ff4757;"></i></div><div class="msg-bubble" style="color: #ff4757; border-color: rgba(255,71,87,0.3); background: rgba(255,71,87,0.1);">Connection error: Groq sleeping or unreachable.</div></div>`; 
+                document.getElementById(typingId).remove(); hist.innerHTML += `<div class="msg ai"><div class="msg-avatar"><i class="fa-solid fa-triangle-exclamation" style="color:#ff4757;"></i></div><div class="msg-bubble" style="color: #ff4757; border-color: rgba(255,71,87,0.3); background: rgba(255,71,87,0.1);">Connection error: Backend sleeping or unreachable.</div></div>`; 
             } finally { hist.scrollTo({ top: hist.scrollHeight, behavior: 'smooth' }); isChatting = false; }
         }
 
@@ -2345,7 +2322,6 @@
             let input = document.getElementById('medSearchInput');
             let text = input.value.trim();
             if(!text) return showToast("Pehle apni problem (symptoms) likhein!", "error");
-            if(GROQ_API_KEY === "YAHAN_APNI_GROQ_API_KEY_DALEIN") return showToast("Setup Groq Key first!", "error");
             
             showToast("AI is analyzing symptoms...", "magic");
             let resBox = document.getElementById('medResultsBox');
@@ -2353,15 +2329,12 @@
             resBox.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-dim);"><i class="fa-solid fa-wand-magic-sparkles fa-beat" style="font-size: 30px; margin-bottom:15px; color: #a855f7;"></i><p>AI is finding the best medicine for your symptoms...</p></div>`;
 
             try {
-                let res = await fetch('https://api.groq.com/openai/v1/chat/completions', { 
+                let res = await fetch(`${BACKEND_URL}/api/fastchat`, { 
                     method: 'POST', 
-                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` }, 
+                    headers: { "Content-Type": "application/json" }, 
                     body: JSON.stringify({ 
-                        model: "llama3-8b-8192",
-                        messages: [
-                            { role: "system", content: "You are a medical AI. Suggest exactly ONE common generic OTC medicine available in India. Reply ONLY with the medicine name, nothing else." },
-                            { role: "user", content: text }
-                        ]
+                        systemPrompt: "You are a medical AI. Suggest exactly ONE common generic OTC medicine available in India. Reply ONLY with the medicine name, nothing else.",
+                        userPrompt: text 
                     }) 
                 });
                 
@@ -2433,18 +2406,14 @@
             sheet.style.display = 'flex'; content.style.transform = 'translateY(100%)'; void sheet.offsetWidth; sheet.classList.add('active'); content.style.transform = 'translateY(0)'; 
             responseBox.innerHTML = `<div style="text-align:center; padding:20px 0; color:var(--text-dim);"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; margin-bottom:10px; color: #a855f7;"></i><p>AI is analyzing <b>${medName}</b>...</p></div>`;
             try {
-                let res = await fetch('https://api.groq.com/openai/v1/chat/completions', { 
+                let res = await fetch(`${BACKEND_URL}/api/fastchat`, { 
                     method: 'POST', 
-                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` }, 
+                    headers: { "Content-Type": "application/json" }, 
                     body: JSON.stringify({ 
-                        model: "llama3-8b-8192",
-                        messages: [
-                            { role: "system", content: "You are a friendly pharmacist AI. Explain the medicine provided by the user in simple Hindi/Hinglish. Format exactly like this: \n\n**Mukhya Upyog (Uses):**\n- point 1\n- point 2\n\n**Kaise Khayein (Dosage):**\n- point 1\n\n**Side Effects:**\n- point 1\n\nKeep it very short and bulleted. Include this disclaimer at the end: '*⚠️ Yeh jankari AI dwara hai, kripya doctor se salah lein.*'" },
-                            { role: "user", content: "Explain medicine: " + medName }
-                        ]
+                        systemPrompt: "You are a friendly pharmacist AI. Explain the medicine provided by the user in simple Hindi/Hinglish. Format exactly like this: \n\n**Mukhya Upyog (Uses):**\n- point 1\n- point 2\n\n**Kaise Khayein (Dosage):**\n- point 1\n\n**Side Effects:**\n- point 1\n\nKeep it very short and bulleted. Include this disclaimer at the end: '*⚠️ Yeh jankari AI dwara hai, kripya doctor se salah lein.*'", 
+                        userPrompt: "Explain medicine: " + medName 
                     }) 
                 });
-                
                 if(!res.ok) throw new Error("API Failed"); let data = await res.json();
                 let reply = data.choices[0].message.content; let formatted = reply.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--neon-primary);">$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\n/g, '<br>');
                 responseBox.innerHTML = formatted;
@@ -2605,7 +2574,7 @@
             const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error);
         });
 
-        // --- NEW: CLOUDINARY UPLOAD LOGIC ---
+        // --- CLOUDINARY UPLOAD LOGIC ---
         async function saveToCloudinaryAndFirebase(mediaUrlOrBlob, type) {
             if(!currentUser) return;
             try {
@@ -2619,33 +2588,20 @@
                 }
                 
                 formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-                
                 let resourceType = (type === 'video' || type === 'audio') ? 'video' : 'image';
                 
-                let res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`, {
-                    method: "POST",
-                    body: formData
-                });
-                
+                let res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`, { method: "POST", body: formData });
                 let data = await res.json();
                 
                 if(data.secure_url) {
-                    db.ref(`users/${currentUser.uid}/gallery`).push({ 
-                        url: data.secure_url, 
-                        type: type, 
-                        timestamp: firebase.database.ServerValue.TIMESTAMP 
-                    });
+                    db.ref(`users/${currentUser.uid}/gallery`).push({ url: data.secure_url, type: type, timestamp: firebase.database.ServerValue.TIMESTAMP });
                 } else {
                     throw new Error("Cloudinary upload failed");
                 }
             } catch(e) {
                 console.error("Cloud Save Error:", e);
                 let fallbackUrl = (mediaUrlOrBlob instanceof Blob) ? URL.createObjectURL(mediaUrlOrBlob) : mediaUrlOrBlob;
-                db.ref(`users/${currentUser.uid}/gallery`).push({ 
-                    url: fallbackUrl, 
-                    type: type, 
-                    timestamp: firebase.database.ServerValue.TIMESTAMP 
-                });
+                db.ref(`users/${currentUser.uid}/gallery`).push({ url: fallbackUrl, type: type, timestamp: firebase.database.ServerValue.TIMESTAMP });
             }
         }
 
@@ -2685,7 +2641,7 @@
                     targetUrl = "https://api.replicate.com/v1/predictions"; 
                     
                     payloadData = { 
-                        version: "39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b", // SDXL Model
+                        version: "39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b", 
                         input: { prompt: (finalPrompt || "A cinematic masterpiece").substring(0, 800) } 
                     };
 
@@ -2703,13 +2659,13 @@
                                 if (p.status === "succeeded") { 
                                     clearInterval(chk); 
                                     finalResultUrl = Array.isArray(p.output) ? p.output[0] : p.output; 
+                                    try { let mRes = await fetch(finalResultUrl); finalResultBlob = await mRes.blob(); } catch(e) { finalResultBlob = null; }
                                     res(); 
                                 } 
                                 else if (p.status === "failed" || p.status === "canceled") { clearInterval(chk); rej(new Error(p.error || "Image model failed.")); }
                             } catch(e) { rc++; if(rc > 60) { clearInterval(chk); rej(new Error("Timeout! Image generation taking too long.")); } }
                         }, 3000);
                     });
-                    finalResultBlob = null;
                 } 
                 else if (currentCreationType === 'video') {
                     finalResultType = 'video'; targetUrl = "https://api.replicate.com/v1/predictions"; 
@@ -2729,12 +2685,16 @@
                             try {
                                 let pd = await fetch(`${BACKEND_URL}/api/proxy`, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ targetUrl: cd.urls.get, method: "GET" }) });
                                 let p = await pd.json();
-                                if (p.status === "succeeded") { clearInterval(chk); finalResultUrl = Array.isArray(p.output) ? p.output[0] : p.output; res(); } 
+                                if (p.status === "succeeded") { 
+                                    clearInterval(chk); 
+                                    finalResultUrl = Array.isArray(p.output) ? p.output[0] : p.output; 
+                                    try { let mRes = await fetch(finalResultUrl); finalResultBlob = await mRes.blob(); } catch(e) { finalResultBlob = null; }
+                                    res(); 
+                                } 
                                 else if (p.status === "failed" || p.status === "canceled") { clearInterval(chk); rej(new Error(p.error || "Video model failed.")); }
                             } catch(e) { rc++; if(rc > 60) { clearInterval(chk); rej(new Error("Timeout! Video generation taking too long.")); } }
                         }, 3000);
                     });
-                    finalResultBlob = null; 
                 }
                 else if (currentCreationType === 'music') {
                     finalResultType = 'audio'; targetUrl = "https://api.replicate.com/v1/predictions";
@@ -2754,34 +2714,32 @@
                             try {
                                 let pd = await fetch(`${BACKEND_URL}/api/proxy`, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ targetUrl: cd.urls.get, method: "GET" }) });
                                 let p = await pd.json();
-                                if (p.status === "succeeded") { clearInterval(chk); finalResultUrl = Array.isArray(p.output) ? p.output[0] : p.output; res(); } 
+                                if (p.status === "succeeded") { 
+                                    clearInterval(chk); 
+                                    finalResultUrl = Array.isArray(p.output) ? p.output[0] : p.output; 
+                                    try { let mRes = await fetch(finalResultUrl); finalResultBlob = await mRes.blob(); } catch(e) { finalResultBlob = null; }
+                                    res(); 
+                                } 
                                 else if (p.status === "failed" || p.status === "canceled") { clearInterval(chk); rej(new Error(p.error || "Music model failed.")); }
                             } catch(e) { rc++; if(rc > 60) { clearInterval(chk); rej(new Error("Timeout! Music generation taking too long.")); } }
                         }, 3000);
                     });
-                    finalResultBlob = null;
                 }
                 else if (currentCreationType === 'story') {
                     finalResultType = 'story';
                     
-                    if(GROQ_API_KEY === "YAHAN_APNI_GROQ_API_KEY_DALEIN") return stopGenerationWithError("Setup Groq Key first!");
-
-                    let chatRes = await fetch('https://api.groq.com/openai/v1/chat/completions', { 
+                    let chatRes = await fetch(`${BACKEND_URL}/api/fastchat`, { 
                         method: 'POST', 
-                        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` }, 
+                        headers: { "Content-Type": "application/json" }, 
                         body: JSON.stringify({ 
-                            model: "llama3-8b-8192",
-                            messages: [
-                                { role: "system", content: "You are a creative storyteller. Write a beautifully descriptive 3 sentence short story based on the prompt in Hindi or English as requested. Make it sound like a comic book panel." },
-                                { role: "user", content: basePrompt }
-                            ]
+                            systemPrompt: "You are a creative storyteller. Write a beautifully descriptive 3 sentence short story based on the prompt in Hindi or English as requested. Make it sound like a comic book panel.", 
+                            userPrompt: basePrompt 
                         }) 
                     });
                     if(!chatRes.ok) throw new Error("Story text failed");
                     let chatData = await chatRes.json();
                     window.finalResultText = chatData.choices[0].message.content;
 
-                    // Image generation from Replicate for the story
                     targetUrl = "https://api.replicate.com/v1/predictions"; 
                     payloadData = { 
                         version: "39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b", 
@@ -2802,13 +2760,13 @@
                                 if (p.status === "succeeded") { 
                                     clearInterval(chk); 
                                     finalResultUrl = Array.isArray(p.output) ? p.output[0] : p.output; 
+                                    try { let mRes = await fetch(finalResultUrl); finalResultBlob = await mRes.blob(); } catch(e) { finalResultBlob = null; }
                                     res(); 
                                 } 
                                 else if (p.status === "failed" || p.status === "canceled") { clearInterval(chk); rej(new Error(p.error || "Image model failed.")); }
                             } catch(e) { rc++; if(rc > 60) { clearInterval(chk); rej(new Error("Timeout! Image generation taking too long.")); } }
                         }, 3000);
                     });
-                    finalResultBlob = null;
                 }
                 finishGen();
             } catch(e) { stopGenerationWithError("Generation Failed: " + e.message); }
@@ -2875,4 +2833,3 @@
     </script>
 </body>
 </html>
-
