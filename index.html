@@ -2133,6 +2133,7 @@
             }); 
         }
 
+        // --- UPDATED EMAIL LOGIN LOGIC ---
         function handleEmailLogin() {
             const email = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value;
@@ -2142,12 +2143,14 @@
             firebase.auth().signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     showToast("Login Successful!", "success");
+                    window.kodularLoginSuccess(userCredential.user.email, userCredential.user.displayName, userCredential.user.photoURL, false);
                 })
                 .catch((error) => {
                     showToast(error.message, "error");
                 });
         }
 
+        // --- UPDATED EMAIL SIGNUP LOGIC ---
         function handleEmailSignUp() {
             const email = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value;
@@ -2157,6 +2160,7 @@
             firebase.auth().createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     showToast("Account Created Successfully!", "success");
+                    window.kodularLoginSuccess(userCredential.user.email, userCredential.user.displayName, userCredential.user.photoURL, false);
                 })
                 .catch((error) => {
                     showToast(error.message, "error");
