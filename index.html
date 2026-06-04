@@ -600,20 +600,22 @@
         document.addEventListener('DOMContentLoaded', function() {
             forceHideSplash();
             
-            auth.getRedirectResult().then(function(result) {
-                if (result.user) window.kodularLoginSuccess(result.user.email, result.user.displayName, result.user.photoURL, false);
-            }).catch(function(error) { console.error(error); });
-
-            try { 
-                let s = localStorage.getItem('muskaan_session'); 
-                if (s) { 
-                    let u = JSON.parse(s); 
-                    window.kodularLoginSuccess(u.email, u.displayName, u.photoURL, true); 
+            // Firebase Auth State Listener
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    window.kodularLoginSuccess(user.email, user.displayName, user.photoURL, true);
                 } else {
-                    document.getElementById('mainApp').style.display = 'block';
-                    loadFeed(); // Trigger feed load regardless of auth
+                    let s = localStorage.getItem('muskaan_session');
+                    if (s) {
+                        let u = JSON.parse(s);
+                        window.kodularLoginSuccess(u.email, u.displayName, u.photoURL, true);
+                    } else {
+                        currentUser = null;
+                        document.getElementById('mainApp').style.display = 'block';
+                        loadFeed(); 
+                    }
                 }
-            } catch(e) { document.getElementById('mainApp').style.display = 'block'; loadFeed(); }
+            });
         });
 
         function showToast(msg, type = 'success') {
@@ -765,7 +767,14 @@
             let userPosts = []; pSnap.forEach(c => { let p=c.val(); p.id=c.key; userPosts.push(p); }); userPosts.reverse();
             userPosts.forEach(post => {
                 let isVid = post.mediaUrl.match(/\.(mp4|webm|ogg|mov)$/i) || post.mediaUrl.includes('/video/');
-                let tag = isVid ? `<video src="${post.mediaUrl}" autoplay muted loop playsinline></video><i class="fa-solid fa-video media-icon"></i>` : `<img src="${post.mediaUrl}"><i class="fa-solid fa-image media-icon"></i>`;
+                
+                // Cloudinary Optimization for Profile Grid Thumbnails
+                let optimizedUrl = post.mediaUrl;
+                if (optimizedUrl.includes('cloudinary.com')) {
+                    optimizedUrl = optimizedUrl.replace('/upload/', '/upload/f_auto,q_auto:eco,w_400,c_limit/');
+                }
+
+                let tag = isVid ? `<video src="${optimizedUrl}" preload="metadata" autoplay muted loop playsinline></video><i class="fa-solid fa-video media-icon"></i>` : `<img src="${optimizedUrl}" loading="lazy"><i class="fa-solid fa-image media-icon"></i>`;
                 grid.innerHTML += `<div class="ig-grid-item" onclick="switchMainTab('feedTab', document.querySelectorAll('.nav-item')[0]); setTimeout(()=>document.getElementById('post-${post.id}').scrollIntoView(), 100);">${tag}</div>`;
             });
         }
@@ -816,9 +825,15 @@
         let feedObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const video = entry.target.querySelector('video.post-media');
-                if(video) { if(entry.isIntersecting) { video.play().catch(e=>{}); } else { video.pause(); video.currentTime = 0; } }
+                if(video) { 
+                    if(entry.isIntersecting) { 
+                        video.muted = true; // explicitly mute before playing to bypass security
+                        let playPromise = video.play();
+                        if (playPromise !== undefined) { playPromise.catch(e => { console.log('Autoplay blocked:', e); }); }
+                    } else { video.pause(); } 
+                }
             });
-        }, { threshold: 0.6 });
+        }, { threshold: 0.3 }); // Threshold lowered so it triggers early
 
         async function switchFeedFilter(mode) {
             currentFeedMode = mode;
@@ -856,14 +871,27 @@
                 let isFollowing = false; if(currentUser && post.uid !== currentUser.uid) { let flSnap = await db.ref(`follows/${currentUser.uid}/${post.uid}`).once('value'); isFollowing = flSnap.exists(); }
 
                 let isVideo = post.mediaUrl.match(/\.(mp4|webm|ogg|mov)$/i) || post.mediaUrl.includes('/video/');
-                let mediaTag = isVideo ? `<video class="post-media" src="${post.mediaUrl}" loop playsinline></video>` : `<img class="post-media" src="${post.mediaUrl}">`;
+                
+                // EXTREME Cloudinary Optimization for fast mobile feed
+                let optimizedUrl = post.mediaUrl;
+                let posterUrl = post.mediaUrl;
+                
+                if (optimizedUrl.includes('cloudinary.com')) {
+                    optimizedUrl = optimizedUrl.replace('/upload/', '/upload/f_auto,q_auto:eco,w_500,c_limit/');
+                    posterUrl = post.mediaUrl.replace('/upload/', '/upload/f_auto,q_auto:eco,w_500,c_limit/').replace(/\.(mp4|webm|mov)$/i, '.jpg');
+                } else {
+                    posterUrl = posterUrl.replace(/\.(mp4|webm|mov)$/i, '.jpg');
+                }
+
+                // Important: added AUTOPLAY MUTED attributes directly on HTML element
+                let mediaTag = isVideo ? `<video class="post-media" src="${optimizedUrl}" poster="${posterUrl}" preload="auto" autoplay loop playsinline muted></video>` : `<img class="post-media" src="${optimizedUrl}" loading="lazy">`;
 
                 let followBtnHtml = '';
                 if(!currentUser || post.uid !== currentUser.uid) { followBtnHtml = `<button class="follow-btn-small ${isFollowing ? 'following' : ''}" onclick="event.stopPropagation(); requireAuth(()=>toggleFollow('${post.uid}'))">${isFollowing ? 'Following' : 'Follow'}</button>`; }
 
                 let postHtml = `
                 <div class="post-wrapper" id="post-${post.id}">
-                    <img class="post-bg-blur" src="${isVideo ? post.mediaUrl.replace('.mp4', '.jpg') : post.mediaUrl}" onerror="this.style.display='none'">
+                    <img class="post-bg-blur" src="${posterUrl}" onerror="this.style.display='none'">
                     <div class="post-content-layer">${mediaTag}</div>
                     <div class="post-touch-area" onclick="handleTap(event, this, ${isVideo})" ondblclick="handleDoubleTap(event, '${post.id}', this)"></div>
                     <div class="post-overlay"></div>
@@ -883,12 +911,26 @@
             document.querySelectorAll('.post-wrapper').forEach(el => feedObserver.observe(el));
         }
 
-        // Tap Handlers
+        // Tap Handlers (Single tap = Mute/Unmute, Double tap = Like)
         function handleTap(event, touchArea, isVideo) {
             if(!touchArea.dataset.lastTap) touchArea.dataset.lastTap = 0;
             let currentTime = new Date().getTime(); let tapLength = currentTime - touchArea.dataset.lastTap;
-            if(tapLength < 300 && tapLength > 0) { handleDoubleTap(event, touchArea.closest('.post-wrapper').id.replace('post-', ''), touchArea); } 
-            else { setTimeout(() => { let newTime = new Date().getTime(); if(newTime - touchArea.dataset.lastTap >= 300 && isVideo) { let vid = touchArea.parentElement.querySelector('video'); if(vid) { if(vid.paused) vid.play(); else vid.pause(); } } }, 300); }
+            
+            if(tapLength < 300 && tapLength > 0) { 
+                clearTimeout(touchArea.dataset.tapTimeout); 
+                handleDoubleTap(event, touchArea.closest('.post-wrapper').id.replace('post-', ''), touchArea); 
+            } else { 
+                touchArea.dataset.tapTimeout = setTimeout(() => { 
+                    if(isVideo) { 
+                        let vid = touchArea.parentElement.querySelector('video.post-media'); 
+                        if(vid) { 
+                            vid.muted = !vid.muted; // Single tap un-mutes the video
+                            if(!vid.muted) showToast("Sound On 🔊", "info");
+                            vid.play().catch(e=>{}); // Force play if paused
+                        } 
+                    } 
+                }, 300); 
+            }
             touchArea.dataset.lastTap = currentTime;
         }
 
