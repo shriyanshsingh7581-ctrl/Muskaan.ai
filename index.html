@@ -68,7 +68,7 @@
         .section.active { display: block; }
         @keyframes slideUpFade { to { opacity: 1; transform: translateY(0); } }
 
-        /* --- MODERN NEO-GLASS FEED UI --- */
+        /* --- PHOTOS FEED UI (HOME) --- */
         .feed-header-top { position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; padding: calc(10px + var(--safe-top)) 20px 10px; background: rgba(6,6,8,0.85); backdrop-filter: blur(25px); border-bottom: 1px solid var(--glass-border); width: 100%; box-sizing: border-box; }
         .feed-logo { font-size: 24px; font-weight: 800; background: var(--brand-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px;}
         .feed-tabs { display: flex; gap: 15px; }
@@ -103,16 +103,43 @@
         .action-icon:active { transform: scale(0.8); }
         .action-divider { width: 1px; height: 20px; background: rgba(255,255,255,0.15); }
         
+        /* Persistent Mute/Unmute Overlay Button */
+        .mute-btn-overlay { position: absolute; bottom: 15px; right: 15px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 12px; z-index: 10; cursor: pointer; transition: var(--transition-fast); }
+        .mute-btn-overlay:active { transform: scale(0.9); }
+
         .modern-caption { font-size: 14px; line-height: 1.5; color: rgba(255,255,255,0.9); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; padding: 0 5px; }
         .modern-caption span.author { font-weight: 800; margin-right: 5px; cursor: pointer; color: white; }
         
         .follow-btn-pill { border: none; background: rgba(168, 85, 247, 0.15); color: var(--neon-primary); border: 1px solid rgba(168, 85, 247, 0.3); padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 800; margin-left: auto; text-transform: uppercase; letter-spacing: 0.5px; transition: var(--transition-fast); }
         .follow-btn-pill.following { background: rgba(255,255,255,0.05); color: var(--text-dim); border-color: var(--glass-border); }
 
-        .vol-indicator { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; z-index: 10; animation: fadeOut 1.5s forwards; pointer-events: none; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        @keyframes fadeOut { 0%, 50% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.9); } }
         @keyframes heartPulse { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 15% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 30% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 70% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; } 100% { transform: translate(-50%, -50%) scale(0); opacity: 0; } }
         .heart-animation { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ff4757; font-size: 90px; z-index: 20; animation: heartPulse 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; pointer-events: none; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
+
+        /* --- DEDICATED SPARK UI (VIDEOS ONLY) --- */
+        #reelsTab { padding: 0; background: #000; height: 100vh; overflow: hidden; }
+        .reels-wrapper { height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; position: relative; }
+        .reel-item { height: 100vh; width: 100vw; scroll-snap-align: start; position: relative; display: flex; justify-content: center; align-items: center; background: #000; }
+        .reel-video { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 1; }
+        
+        .reel-overlay-top { position: absolute; top: calc(15px + var(--safe-top)); left: 20px; z-index: 10; font-size: 24px; font-weight: 800; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.8); letter-spacing: -0.5px; }
+        
+        .reel-overlay-bottom { position: absolute; bottom: calc(100px + var(--safe-bottom)); left: 15px; right: 15px; z-index: 10; display: flex; justify-content: space-between; align-items: flex-end; pointer-events: none; }
+        
+        .reel-info-box { display: flex; flex-direction: column; gap: 10px; max-width: 75%; pointer-events: auto; }
+        .reel-author-row { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .reel-author-img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.5); object-fit: cover; }
+        .reel-author-name { font-size: 15px; font-weight: 800; color: white; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
+        .reel-caption-text { font-size: 14px; color: rgba(255,255,255,0.9); line-height: 1.4; text-shadow: 0 2px 5px rgba(0,0,0,0.8); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .reel-actions-box { display: flex; flex-direction: column; gap: 22px; align-items: center; pointer-events: auto; }
+        .reel-action-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; color: white; cursor: pointer; transition: 0.2s; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.8)); }
+        .reel-action-btn:active { transform: scale(0.85); }
+        .reel-action-btn i { font-size: 30px; }
+        .reel-action-btn span { font-size: 12px; font-weight: 700; }
+
+        .reel-vol-indicator-anim { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); color: white; width: 70px; height: 70px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; z-index: 20; animation: fadeScaleOut 1s forwards; pointer-events: none; }
+        @keyframes fadeScaleOut { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 40% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } }
 
         /* --- STUDIO TAB UI (IMPROVED HOME DASHBOARD) --- */
         .home-header-title { font-size: 26px; font-weight: 800; color: white; letter-spacing: -0.5px; }
@@ -383,6 +410,12 @@
                 </div>
             </div>
 
+            <div id="reelsTab" class="section">
+                <div class="reel-overlay-top">Spark</div>
+                <div class="reels-wrapper" id="reelsContainer">
+                    </div>
+            </div>
+
             <div id="homeTab" class="section" style="padding: 0;">
                 <div style="padding: calc(15px + var(--safe-top)) 20px 20px;">
                     
@@ -424,6 +457,12 @@
                             <div style="display: flex; align-items: center; gap: 18px;">
                                 <i class="fa-solid fa-eraser" style="font-size: 28px;"></i>
                                 <div><span>Background Remover</span><p style="margin-top:2px;">Pro cuts in 2 seconds</p></div>
+                            </div>
+                        </div>
+                        <div class="bento-item large" style="min-height: 90px; background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(6,182,212,0.15)); border-color: rgba(16,185,129,0.4);" onclick="switchMainTab('pharmacyTab', null)">
+                            <div style="display: flex; align-items: center; gap: 18px;">
+                                <i class="fa-solid fa-leaf" style="font-size: 28px; color:#10b981;"></i>
+                                <div><span>RS Health & Pharmacy</span><p style="margin-top:2px;">Medicines & AI Dietician</p></div>
                             </div>
                         </div>
                     </div>
@@ -503,7 +542,7 @@
 
                 <div style="display: flex; background:rgba(255,255,255,0.03); border-radius:100px; padding:4px; margin-bottom:15px; border:1px solid var(--glass-border);">
                     <div style="flex: 1; text-align: center; padding: 10px; background:rgba(255,255,255,0.1); border-radius:100px; color: white; font-weight:700; box-shadow:0 4px 10px rgba(0,0,0,0.2);"><i class="fa-solid fa-grid-2"></i> Posts</div>
-                    <div style="flex: 1; text-align: center; padding: 10px; color: var(--text-dim); font-weight:600;"><i class="fa-solid fa-clapperboard"></i> Reels</div>
+                    <div style="flex: 1; text-align: center; padding: 10px; color: var(--text-dim); font-weight:600;"><i class="fa-solid fa-bolt"></i> Spark</div>
                 </div>
                 
                 <div class="ig-grid" id="igProfilePostsGrid">
@@ -518,9 +557,9 @@
         <div class="dock-container">
             <nav class="bottom-nav">
                 <div class="nav-item active" onclick="switchMainTab('feedTab', this)"><i class="fa-solid fa-house"></i></div>
-                <div class="nav-item" onclick="switchMainTab('homeTab', this)"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <div class="nav-item" onclick="switchMainTab('reelsTab', this)"><i class="fa-solid fa-bolt"></i></div>
                 <div class="create-fab" onclick="requireAuth(() => openCreateSheet('post'))"><i class="fa-solid fa-plus"></i></div>
-                <div class="nav-item" id="nav-pharmacy" onclick="switchMainTab('pharmacyTab', this)"><i class="fa-solid fa-notes-medical"></i></div>
+                <div class="nav-item" onclick="switchMainTab('homeTab', this)"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
                 <div class="nav-item" onclick="requireAuth(() => loadMyProfile())"><i class="fa-solid fa-user"></i></div>
             </nav>
         </div>
@@ -708,27 +747,72 @@
         // GLOBAL AUDIO STATE
         let isGlobalMuted = true;
 
-        // --- KODULAR WEBVIEW BRIDGE FIX ---
-        // 1. Direct function call method (EvaluateJS)
+        // ==========================================
+        // --- STRICT GLOBAL VIDEO PAUSE CONTROLLER ---
+        // ==========================================
+        
+        window.pauseAllVideos = function(exceptThisVideo = null) {
+            document.querySelectorAll('video').forEach(v => {
+                if (v !== exceptThisVideo && !v.paused) {
+                    v.pause();
+                }
+            });
+        };
+
+        // ==========================================
+        // --- ULTIMATE KODULAR WEBVIEW BRIDGE ---
+        // ==========================================
+        
         window.kodularGoogleLogin = function(email, name, photoUrl) {
+            if (typeof window.AppInventor !== 'undefined') {
+                window.AppInventor.setWebViewString(""); 
+            }
             showToast("Google Login Success!", "success");
             window.kodularLoginSuccess(email, name, photoUrl, false);
         };
 
-        // 2. Fallback Polling Method (Using WebViewString)
-        if (typeof window.AppInventor !== 'undefined') {
-            setInterval(() => {
-                let wvStr = window.AppInventor.getWebViewString();
-                if (wvStr && wvStr.startsWith('{"email"')) {
-                    try {
-                        let data = JSON.parse(wvStr);
-                        window.AppInventor.setWebViewString("SUCCESS"); // clear it so it doesn't loop
-                        window.kodularGoogleLogin(data.email, data.name, data.photo);
-                    } catch(e) { console.error("Kodular Data Error", e); }
+        function handleLoginClick() {
+            try {
+                if (typeof window.AppInventor !== 'undefined') { 
+                    window.AppInventor.setWebViewString("GoogleLogin"); 
+                    showToast("Opening Google Sign-in...", "info");
+                } else {
+                    let provider = new firebase.auth.GoogleAuthProvider();
+                    auth.signInWithRedirect(provider);
                 }
-            }, 1000);
+            } catch(e) { showToast("Login error: " + e.message, "error"); }
         }
-        // ------------------------------------
+        
+        // ==========================================
+        
+        // --- SMART GLOBAL MUTE/UNMUTE HANDLER FOR SPARK ---
+        window.toggleReelMute = function(reelContainer) {
+            isGlobalMuted = !isGlobalMuted;
+            
+            let currentVid = null;
+            if(reelContainer) currentVid = reelContainer.querySelector('.reel-video');
+
+            // Sync mute state across all DOM videos safely
+            document.querySelectorAll('.reel-video').forEach(v => {
+                v.muted = isGlobalMuted;
+                if(!isGlobalMuted) v.volume = 1.0;
+            });
+
+            // Show volume icon indicator animation
+            if(reelContainer) {
+                let volIcon = document.createElement('div');
+                volIcon.className = 'reel-vol-indicator-anim';
+                volIcon.innerHTML = isGlobalMuted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
+                reelContainer.appendChild(volIcon);
+                setTimeout(() => volIcon.remove(), 1000);
+            }
+
+            // Play the active reel if unmuted
+            if (currentVid && !isGlobalMuted && currentVid.paused) {
+                window.pauseAllVideos(currentVid); // Strict stop others
+                currentVid.play().catch(e=>{});
+            }
+        };
 
         function forceHideSplash() {
             let splash = document.getElementById('splashScreen'); 
@@ -741,7 +825,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             forceHideSplash();
             
-            // Core Authentication Listener
             auth.onAuthStateChanged(user => {
                 if (user) {
                     window.kodularLoginSuccess(user.email, user.displayName, user.photoURL, true);
@@ -769,7 +852,7 @@
             c.appendChild(t); setTimeout(() => { t.style.animation = 'toastIn 0.5s reverse forwards'; setTimeout(() => t.remove(), 500); }, 3000); 
         }
 
-        // --- AUTHENTICATION ---
+        // --- EMAIL AUTHENTICATION ---
         function requireAuth(callback) {
             if(currentUser) { callback(); } else {
                 pendingAuthAction = callback;
@@ -779,19 +862,6 @@
 
         function closeLoginPopup() { document.getElementById('loginOverlay').classList.remove('active'); pendingAuthAction = null; }
 
-        function handleLoginClick() {
-            try {
-                if (typeof window.AppInventor !== 'undefined') { 
-                    // Send instruction to Kodular to open Native Google Login
-                    window.AppInventor.setWebViewString("TRIGGER_GOOGLE_LOGIN"); 
-                    showToast("Opening Google Sign-in...", "info");
-                } else {
-                    let provider = new firebase.auth.GoogleAuthProvider();
-                    auth.signInWithRedirect(provider);
-                }
-            } catch(e) { showToast("Login error: " + e.message, "error"); }
-        }
-        
         function handleEmailLogin() {
             const email = document.getElementById('authEmail').value.trim(); const password = document.getElementById('authPassword').value;
             if(!email || !password) return showToast("Email and password required", "error");
@@ -839,13 +909,16 @@
 
         // --- NAVIGATION ---
         function switchMainTab(tabId, el) { 
+            // 🚨 STRICT PAUSE: Pause all videos when switching tabs to prevent audio leak
+            window.pauseAllVideos();
+
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); 
             document.getElementById(tabId).classList.add('active'); 
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active')); 
             if(el) el.classList.add('active'); 
             
             let header = document.getElementById('topHeader');
-            if(tabId === 'feedTab') { header.style.display = 'none'; } 
+            if(tabId === 'feedTab' || tabId === 'reelsTab') { header.style.display = 'none'; } 
             else { header.style.display = 'flex'; }
         }
 
@@ -940,7 +1013,11 @@
                 }
 
                 let tag = isVid ? `<video src="${optimizedUrl}" preload="metadata" autoplay muted loop playsinline></video><i class="fa-solid fa-video media-icon"></i>` : `<img src="${optimizedUrl}" loading="lazy"><i class="fa-solid fa-image media-icon"></i>`;
-                grid.innerHTML += `<div class="ig-grid-item" onclick="switchMainTab('feedTab', document.querySelectorAll('.nav-item')[0]); setTimeout(()=>document.getElementById('post-${post.id}').scrollIntoView({behavior: 'smooth', block: 'center'}), 100);">${tag}</div>`;
+                
+                // Clicking profile post takes them to respective feed
+                let tab = isVid ? 'reelsTab' : 'feedTab';
+                let index = isVid ? 1 : 0;
+                grid.innerHTML += `<div class="ig-grid-item" onclick="switchMainTab('${tab}', document.querySelectorAll('.nav-item')[${index}]); setTimeout(()=>document.getElementById('${isVid?'reel':'post'}-${post.id}').scrollIntoView({behavior: 'smooth', block: 'center'}), 100);">${tag}</div>`;
             });
         }
 
@@ -986,12 +1063,17 @@
             }
         }
 
-        // --- MODERN NEO-GLASS FEED ENGINE ---
-        let feedObserver = new IntersectionObserver((entries) => {
+        // ==========================================
+        // --- SMART SPARK OBSERVER (STRICT PAUSE) ---
+        // ==========================================
+        let reelsObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                const video = entry.target.querySelector('video.post-media');
+                const video = entry.target.querySelector('.reel-video');
                 if(video) { 
                     if(entry.isIntersecting) { 
+                        // 🚨 STRICT PAUSE: FORCE PAUSE ALL OTHER VIDEOS GLOBALLY TO PREVENT AUDIO LEAK
+                        window.pauseAllVideos(video);
+
                         video.muted = isGlobalMuted; 
                         let playPromise = video.play();
                         if (playPromise !== undefined) { 
@@ -999,10 +1081,11 @@
                         }
                     } else { 
                         video.pause(); 
+                        video.currentTime = 0; // Reset for loop feel
                     } 
                 }
             });
-        }, { threshold: 0.5 }); 
+        }, { threshold: 0.65 }); // Strict threshold 
 
         async function switchFeedFilter(mode) {
             currentFeedMode = mode;
@@ -1021,20 +1104,24 @@
                 allPosts = posts; renderFeedDOM();
             }, (error) => {
                 console.error("Firebase Read Error:", error);
-                document.getElementById('feedContainer').innerHTML = `<div style="padding: 100px 20px; text-align: center; color: #ff4757; font-weight: bold;"><i class="fa-solid fa-triangle-exclamation" style="font-size:30px; margin-bottom:10px;"></i><br>Database Read Restricted.<br><span style="font-size:12px; font-weight: normal;">Please update Firebase rules to allow public reading to view posts without login.</span></div>`;
+                document.getElementById('feedContainer').innerHTML = `<div style="padding: 100px 20px; text-align: center; color: #ff4757; font-weight: bold;"><i class="fa-solid fa-triangle-exclamation" style="font-size:30px; margin-bottom:10px;"></i><br>Database Read Restricted.</div>`;
             });
         }
 
         async function renderFeedDOM() {
-            let container = document.getElementById('feedContainer'); container.innerHTML = ''; 
+            let postsContainer = document.getElementById('feedContainer'); 
+            let reelsContainer = document.getElementById('reelsContainer'); 
+            postsContainer.innerHTML = ''; 
+            reelsContainer.innerHTML = ''; 
             
             let postsToShow = allPosts; 
-            
             if(currentFeedMode === 'following' && currentUser) {
                 let fSnap = await db.ref(`follows/${currentUser.uid}`).once('value'); let followingIds = fSnap.exists() ? Object.keys(fSnap.val()) : [];
                 postsToShow = allPosts.filter(p => followingIds.includes(p.uid) || p.uid === currentUser.uid);
             }
-            if(postsToShow.length === 0) { container.innerHTML = `<div style="padding: 100px 20px; text-align: center; color: var(--text-dim);"><i class="fa-solid fa-camera" style="font-size: 40px; margin-bottom: 15px; opacity: 0.5;"></i><br><span style="font-weight:600;">No posts to show here.<br>Be the first to upload!</span></div>`; return; }
+
+            let hasPosts = false;
+            let hasReels = false;
 
             for(let post of postsToShow) {
                 let isLiked = false; if(currentUser) { let lSnap = await db.ref(`likes/${post.id}/${currentUser.uid}`).once('value'); isLiked = lSnap.exists(); }
@@ -1043,72 +1130,109 @@
                 let isFollowing = false; if(currentUser && post.uid !== currentUser.uid) { let flSnap = await db.ref(`follows/${currentUser.uid}/${post.uid}`).once('value'); isFollowing = flSnap.exists(); }
 
                 let isVideo = post.mediaUrl.match(/\.(mp4|webm|ogg|mov)$/i) || post.mediaUrl.includes('/video/');
-                
-                let optimizedUrl = post.mediaUrl;
-                let posterUrl = post.mediaUrl;
+                let optimizedUrl = post.mediaUrl; let posterUrl = post.mediaUrl;
                 
                 if (optimizedUrl.includes('cloudinary.com')) {
                     if (isVideo) {
                         optimizedUrl = optimizedUrl.replace('/upload/', '/upload/q_auto,vc_auto/');
                         let urlParts = post.mediaUrl.split('/'); let lastPart = urlParts.pop();
                         if(lastPart.includes('.')) { lastPart = lastPart.substring(0, lastPart.lastIndexOf('.')) + '.jpg'; } else { lastPart += '.jpg'; }
-                        urlParts.push(lastPart);
-                        posterUrl = urlParts.join('/').replace('/upload/', '/upload/f_auto,q_auto,w_500/');
+                        urlParts.push(lastPart); posterUrl = urlParts.join('/').replace('/upload/', '/upload/f_auto,q_auto,w_500/');
                     } else {
-                        optimizedUrl = optimizedUrl.replace('/upload/', '/upload/f_auto,q_auto:eco,w_600,c_limit/');
-                        posterUrl = optimizedUrl;
+                        optimizedUrl = optimizedUrl.replace('/upload/', '/upload/f_auto,q_auto:eco,w_600,c_limit/'); posterUrl = optimizedUrl;
                     }
                 } else if(isVideo) { posterUrl = posterUrl.replace(/\.(mp4|webm|mov)$/i, '.jpg'); }
 
-                let mediaTag = isVideo ? `<video class="post-media" src="${optimizedUrl}" poster="${posterUrl}" preload="metadata" autoplay loop playsinline ${isGlobalMuted ? 'muted' : ''}></video>` : `<img class="post-media" src="${optimizedUrl}" loading="lazy">`;
-
                 let followBtnHtml = (!currentUser || post.uid !== currentUser.uid) ? `<button class="follow-btn-pill ${isFollowing ? 'following' : ''}" onclick="event.stopPropagation(); requireAuth(()=>toggleFollow('${post.uid}'))">${isFollowing ? 'Following' : 'Follow'}</button>` : '';
 
-                // NEW HOLOGRAPHIC POST HTML
-                let postHtml = `
-                <div class="modern-post" id="post-${post.id}">
-                    <div class="modern-post-header">
-                        <div class="modern-user-info" onclick="viewProfile('${post.uid}')">
-                            <img src="${post.author.photoURL}" class="modern-avatar">
-                            <div class="modern-user-details">
-                                <div class="modern-name">${post.author.displayName}</div>
-                                <div class="modern-subtitle">${new Date(post.timestamp).toLocaleDateString()}</div>
+                if (isVideo) {
+                    hasReels = true;
+                    // SPARK HTML (Full Screen vertical snap)
+                    let reelHtml = `
+                    <div class="reel-item" id="reel-${post.id}" onclick="toggleReelMute(this)">
+                        <video class="reel-video" src="${optimizedUrl}" poster="${posterUrl}" preload="metadata" loop playsinline></video>
+                        <div class="reel-overlay-bottom">
+                            <div class="reel-info-box">
+                                <div class="reel-author-row" onclick="event.stopPropagation(); viewProfile('${post.uid}')">
+                                    <img src="${post.author.photoURL}" class="reel-author-img">
+                                    <span class="reel-author-name">${post.author.displayName}</span>
+                                    ${followBtnHtml}
+                                </div>
+                                ${post.caption ? `<div class="reel-caption-text">${post.caption}</div>` : ''}
+                            </div>
+                            <div class="reel-actions-box">
+                                <div class="reel-action-btn" onclick="event.stopPropagation(); requireAuth(()=>toggleLike('${post.id}'))">
+                                    <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart" id="reel-like-icon-${post.id}" style="color: ${isLiked ? '#ff4757' : 'white'};"></i>
+                                    <span id="reel-like-count-${post.id}">${likeCount}</span>
+                                </div>
+                                <div class="reel-action-btn" onclick="event.stopPropagation(); requireAuth(()=>openComments('${post.id}'))">
+                                    <i class="fa-regular fa-comment"></i>
+                                    <span>${commentCount}</span>
+                                </div>
+                                <div class="reel-action-btn" onclick="event.stopPropagation(); shareVideo('${post.mediaUrl}')">
+                                    <i class="fa-regular fa-paper-plane"></i>
+                                </div>
+                                <div class="reel-action-btn" style="margin-top: 5px;">
+                                    <i class="fa-solid fa-ellipsis-vertical" style="font-size: 20px;"></i>
+                                </div>
                             </div>
                         </div>
-                        ${followBtnHtml}
-                        ${(!followBtnHtml) ? `<button class="modern-more-btn"><i class="fa-solid fa-ellipsis"></i></button>` : ''}
-                    </div>
-                    
-                    <div class="modern-media-container" onclick="handleTap(event, this, ${isVideo})">
-                        <img class="modern-blur-bg" src="${posterUrl}" onerror="this.style.display='none'">
-                        ${mediaTag}
-                        
-                        <div class="floating-action-pill">
-                            <button class="action-icon" onclick="event.stopPropagation(); requireAuth(()=>toggleLike('${post.id}'))">
-                                <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart" id="like-icon-${post.id}" style="color: ${isLiked ? '#ff4757' : 'white'};"></i>
-                                <span id="like-count-${post.id}">${likeCount}</span>
-                            </button>
-                            <div class="action-divider"></div>
-                            <button class="action-icon" onclick="event.stopPropagation(); requireAuth(()=>openComments('${post.id}'))">
-                                <i class="fa-regular fa-comment"></i>
-                                <span>${commentCount}</span>
-                            </button>
-                            <div class="action-divider"></div>
-                            <button class="action-icon" onclick="event.stopPropagation(); shareVideo('${post.mediaUrl}')">
-                                <i class="fa-regular fa-paper-plane"></i>
-                            </button>
+                    </div>`;
+                    let div = document.createElement('div'); div.innerHTML = reelHtml; reelsContainer.appendChild(div.firstElementChild);
+                } else {
+                    hasPosts = true;
+                    // POSTS HTML (Photos only in Home Feed)
+                    let postHtml = `
+                    <div class="modern-post" id="post-${post.id}">
+                        <div class="modern-post-header">
+                            <div class="modern-user-info" onclick="viewProfile('${post.uid}')">
+                                <img src="${post.author.photoURL}" class="modern-avatar">
+                                <div class="modern-user-details">
+                                    <div class="modern-name">${post.author.displayName}</div>
+                                    <div class="modern-subtitle">${new Date(post.timestamp).toLocaleDateString()}</div>
+                                </div>
+                            </div>
+                            ${followBtnHtml}
+                            ${(!followBtnHtml) ? `<button class="modern-more-btn"><i class="fa-solid fa-ellipsis"></i></button>` : ''}
                         </div>
-                    </div>
-                    
-                    ${post.caption ? `<div class="modern-caption"><span class="author" onclick="viewProfile('${post.uid}')">${post.author.displayName}</span> ${post.caption}</div>` : ''}
-                </div>`;
-                
-                let div = document.createElement('div'); div.innerHTML = postHtml; container.appendChild(div.firstElementChild);
+                        
+                        <div class="modern-media-container" onclick="handleTap(event, this, false)">
+                            <img class="modern-blur-bg" src="${posterUrl}" onerror="this.style.display='none'">
+                            <img class="post-media" src="${optimizedUrl}" loading="lazy">
+                            
+                            <div class="floating-action-pill">
+                                <button class="action-icon" onclick="event.stopPropagation(); requireAuth(()=>toggleLike('${post.id}'))">
+                                    <i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart" id="like-icon-${post.id}" style="color: ${isLiked ? '#ff4757' : 'white'};"></i>
+                                    <span id="like-count-${post.id}">${likeCount}</span>
+                                </button>
+                                <div class="action-divider"></div>
+                                <button class="action-icon" onclick="event.stopPropagation(); requireAuth(()=>openComments('${post.id}'))">
+                                    <i class="fa-regular fa-comment"></i>
+                                    <span>${commentCount}</span>
+                                </button>
+                                <div class="action-divider"></div>
+                                <button class="action-icon" onclick="event.stopPropagation(); shareVideo('${post.mediaUrl}')">
+                                    <i class="fa-regular fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        ${post.caption ? `<div class="modern-caption"><span class="author" onclick="viewProfile('${post.uid}')">${post.author.displayName}</span> ${post.caption}</div>` : ''}
+                    </div>`;
+                    let div = document.createElement('div'); div.innerHTML = postHtml; postsContainer.appendChild(div.firstElementChild);
+                }
             }
-            document.querySelectorAll('.modern-post').forEach(el => feedObserver.observe(el));
+
+            if(!hasPosts) postsContainer.innerHTML = `<div style="padding: 100px 20px; text-align: center; color: var(--text-dim);"><i class="fa-solid fa-camera" style="font-size: 40px; margin-bottom: 15px; opacity: 0.5;"></i><br><span style="font-weight:600;">No photo posts yet.</span></div>`;
+            if(!hasReels) reelsContainer.innerHTML = `<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; color:var(--text-dim);"><i class="fa-solid fa-bolt" style="font-size: 40px; margin-bottom: 15px; opacity: 0.5;"></i><br><span style="font-weight:600;">No Sparks yet.</span></div>`;
+
+            // Observe all new sparks
+            document.querySelectorAll('.reel-item').forEach(el => reelsObserver.observe(el));
         }
 
+        // Tap for double like on photos
         function handleTap(event, mediaContainer, isVideo) {
+            if(isVideo) return; // Video handled by Spark UI
             if(!mediaContainer.dataset.lastTap) mediaContainer.dataset.lastTap = 0;
             let currentTime = new Date().getTime(); 
             let tapLength = currentTime - parseInt(mediaContainer.dataset.lastTap);
@@ -1117,37 +1241,13 @@
 
             if(tapLength < 300 && tapLength > 0) { 
                 clearTimeout(mediaContainer.dataset.tapTimeout); 
-                handleDoubleTap(event, postId, mediaContainer); 
+                let heart = document.createElement('i'); heart.className = 'fa-solid fa-heart heart-animation'; 
+                mediaContainer.appendChild(heart); setTimeout(() => heart.remove(), 1000);
+                requireAuth(() => forceLike(postId));
             } else { 
-                mediaContainer.dataset.tapTimeout = setTimeout(() => { 
-                    if(isVideo) { 
-                        let vid = mediaContainer.querySelector('video.post-media'); 
-                        if(vid) { 
-                            isGlobalMuted = !isGlobalMuted; // Toggle Global State
-                            
-                            // Apply to all videos dynamically
-                            document.querySelectorAll('video.post-media').forEach(v => { v.muted = isGlobalMuted; });
-
-                            // Show Volume Indicator
-                            let volIcon = document.createElement('div');
-                            volIcon.className = 'vol-indicator';
-                            volIcon.innerHTML = isGlobalMuted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
-                            mediaContainer.appendChild(volIcon);
-                            setTimeout(() => volIcon.remove(), 1500);
-
-                            if(!isGlobalMuted) { vid.volume = 1.0; vid.play().catch(e => console.log(e)); }
-                        } 
-                    } 
-                }, 300); 
+                mediaContainer.dataset.tapTimeout = setTimeout(() => { }, 300); 
             }
             mediaContainer.dataset.lastTap = currentTime;
-        }
-
-        function handleDoubleTap(event, postId, mediaContainer) {
-            let heart = document.createElement('i'); heart.className = 'fa-solid fa-heart heart-animation'; 
-            mediaContainer.appendChild(heart);
-            setTimeout(() => heart.remove(), 1000);
-            requireAuth(() => forceLike(postId));
         }
 
         async function forceLike(postId) {
@@ -1165,15 +1265,27 @@
 
         async function toggleLike(postId) {
             let likeRef = db.ref(`likes/${postId}/${currentUser.uid}`); let snap = await likeRef.once('value');
-            let likeBtn = document.getElementById(`like-icon-${postId}`); let countSpan = document.getElementById(`like-count-${postId}`); let currentCount = parseInt(countSpan.innerText) || 0;
+            
+            // Try to find elements in both Feed and Sparks
+            let likeBtn1 = document.getElementById(`like-icon-${postId}`); 
+            let countSpan1 = document.getElementById(`like-count-${postId}`); 
+            let likeBtn2 = document.getElementById(`reel-like-icon-${postId}`); 
+            let countSpan2 = document.getElementById(`reel-like-count-${postId}`); 
+
+            let currentCount = parseInt(countSpan1 ? countSpan1.innerText : (countSpan2 ? countSpan2.innerText : 0)) || 0;
+            
             if(snap.exists()) { 
                 await likeRef.remove(); 
-                if(likeBtn) { likeBtn.classList.remove('fa-solid'); likeBtn.classList.add('fa-regular'); likeBtn.style.color = "white"; } 
-                if(countSpan) countSpan.innerText = currentCount - 1; 
+                if(likeBtn1) { likeBtn1.classList.remove('fa-solid'); likeBtn1.classList.add('fa-regular'); likeBtn1.style.color = "white"; } 
+                if(countSpan1) countSpan1.innerText = currentCount - 1; 
+                if(likeBtn2) { likeBtn2.classList.remove('fa-solid'); likeBtn2.classList.add('fa-regular'); likeBtn2.style.color = "white"; } 
+                if(countSpan2) countSpan2.innerText = currentCount - 1; 
             } else { 
                 await likeRef.set(true); 
-                if(likeBtn) { likeBtn.classList.remove('fa-regular'); likeBtn.classList.add('fa-solid'); likeBtn.style.color = "#ff4757"; } 
-                if(countSpan) countSpan.innerText = currentCount + 1; 
+                if(likeBtn1) { likeBtn1.classList.remove('fa-regular'); likeBtn1.classList.add('fa-solid'); likeBtn1.style.color = "#ff4757"; } 
+                if(countSpan1) countSpan1.innerText = currentCount + 1; 
+                if(likeBtn2) { likeBtn2.classList.remove('fa-regular'); likeBtn2.classList.add('fa-solid'); likeBtn2.style.color = "#ff4757"; } 
+                if(countSpan2) countSpan2.innerText = currentCount + 1; 
             }
         }
 
