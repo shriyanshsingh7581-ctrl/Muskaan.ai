@@ -622,10 +622,7 @@
                 }
             });
 
-            // Catch redirects if not inside Kodular
-            auth.getRedirectResult().catch(function(error) {
-                console.error("Login Redirect Error:", error);
-            });
+            auth.getRedirectResult().catch(function(error) { console.error("Login Redirect Error:", error); });
         });
 
         function showToast(msg, type = 'success') {
@@ -655,9 +652,7 @@
                     let provider = new firebase.auth.GoogleAuthProvider();
                     auth.signInWithRedirect(provider);
                 }
-            } catch(e) {
-                showToast("Login error: " + e.message, "error");
-            }
+            } catch(e) { showToast("Login error: " + e.message, "error"); }
         }
         
         function handleEmailLogin() {
@@ -755,17 +750,17 @@
 
         async function renderProfile(uid) {
             let isMe = currentUser && currentUser.uid === uid;
-            let uSnap = await db.ref(`users/${uid}`).once('value');
-            let userProfile = uSnap.exists() ? uSnap.val() : { displayName: "User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png", bio: "Welcome to my creative profile! 🌟" };
+            let uSnap = await db.ref(`users/${uid}`).once('value').catch(()=>null);
+            let userProfile = (uSnap && uSnap.exists()) ? uSnap.val() : { displayName: "User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png", bio: "Welcome to my creative profile! 🌟" };
             
             document.getElementById('igUsernameText').innerText = userProfile.displayName;
             document.getElementById('igProfileAvatar').src = userProfile.photoURL;
             document.getElementById('igBioText').innerText = userProfile.bio || "Welcome to my creative profile! 🌟";
 
-            let pSnap = await db.ref('posts').orderByChild('uid').equalTo(uid).once('value');
-            let postCount = pSnap.exists() ? Object.keys(pSnap.val()).length : 0; document.getElementById('igCountPosts').innerText = postCount;
-            let followersSnap = await db.ref(`followers/${uid}`).once('value'); document.getElementById('igCountFollowers').innerText = followersSnap.exists() ? Object.keys(followersSnap.val()).length : 0;
-            let followingSnap = await db.ref(`follows/${uid}`).once('value'); document.getElementById('igCountFollowing').innerText = followingSnap.exists() ? Object.keys(followingSnap.val()).length : 0;
+            let pSnap = await db.ref('posts').orderByChild('uid').equalTo(uid).once('value').catch(()=>null);
+            let postCount = (pSnap && pSnap.exists()) ? Object.keys(pSnap.val()).length : 0; document.getElementById('igCountPosts').innerText = postCount;
+            let followersSnap = await db.ref(`followers/${uid}`).once('value').catch(()=>null); document.getElementById('igCountFollowers').innerText = (followersSnap && followersSnap.exists()) ? Object.keys(followersSnap.val()).length : 0;
+            let followingSnap = await db.ref(`follows/${uid}`).once('value').catch(()=>null); document.getElementById('igCountFollowing').innerText = (followingSnap && followingSnap.exists()) ? Object.keys(followingSnap.val()).length : 0;
 
             let actionsBox = document.getElementById('igActionButtons');
             if(isMe) {
@@ -776,7 +771,7 @@
             }
 
             let grid = document.getElementById('igProfilePostsGrid'); grid.innerHTML = '';
-            if(!pSnap.exists()) { grid.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 50px 20px; color: var(--text-dim);"><i class="fa-solid fa-camera" style="font-size:40px; margin-bottom:15px; opacity:0.5;"></i><br>No posts yet</div>`; return; }
+            if(!pSnap || !pSnap.exists()) { grid.innerHTML = `<div style="grid-column: span 3; text-align: center; padding: 50px 20px; color: var(--text-dim);"><i class="fa-solid fa-camera" style="font-size:40px; margin-bottom:15px; opacity:0.5;"></i><br>No posts yet</div>`; return; }
 
             let userPosts = []; pSnap.forEach(c => { let p=c.val(); p.id=c.key; userPosts.push(p); }); userPosts.reverse();
             userPosts.forEach(post => {
@@ -784,7 +779,11 @@
                 
                 let optimizedUrl = post.mediaUrl;
                 if (optimizedUrl.includes('cloudinary.com')) {
-                    optimizedUrl = optimizedUrl.replace('/upload/', '/upload/f_auto,q_auto:eco,w_400,c_limit/');
+                    if (isVid) {
+                        optimizedUrl = optimizedUrl.replace('/upload/', '/upload/q_auto,vc_auto/');
+                    } else {
+                        optimizedUrl = optimizedUrl.replace('/upload/', '/upload/f_auto,q_auto:eco,w_400,c_limit/');
+                    }
                 }
 
                 let tag = isVid ? `<video src="${optimizedUrl}" preload="metadata" autoplay muted loop playsinline></video><i class="fa-solid fa-video media-icon"></i>` : `<img src="${optimizedUrl}" loading="lazy"><i class="fa-solid fa-image media-icon"></i>`;
@@ -809,9 +808,9 @@
             container.innerHTML = `<div style="text-align:center; padding: 40px; color:var(--text-dim);"><i class="fa-solid fa-spinner fa-spin"></i></div>`;
 
             let path = type === 'followers' ? `followers/${currentViewingProfileUid}` : `follows/${currentViewingProfileUid}`;
-            let snap = await db.ref(path).once('value');
+            let snap = await db.ref(path).once('value').catch(()=>null);
             
-            if(!snap.exists()) {
+            if(!snap || !snap.exists()) {
                 container.innerHTML = `<div style="text-align:center; padding: 40px; color:var(--text-dim);">No users found.</div>`;
                 return;
             }
@@ -820,8 +819,8 @@
             container.innerHTML = '';
 
             for(let id of userIds) {
-                let uSnap = await db.ref(`users/${id}`).once('value');
-                let user = uSnap.exists() ? uSnap.val() : { displayName: "User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" };
+                let uSnap = await db.ref(`users/${id}`).once('value').catch(()=>null);
+                let user = (uSnap && uSnap.exists()) ? uSnap.val() : { displayName: "User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" };
                 
                 container.innerHTML += `
                 <div class="user-list-item" onclick="closeUserList(); setTimeout(()=>viewProfile('${id}'), 300)">
@@ -836,24 +835,29 @@
 
         // --- FEED / REELS (UNIVERSAL POSTS) ---
         
-        // INTERSECTION OBSERVER WITH PLAY/PAUSE LOGIC FIX
+        // INTERSECTION OBSERVER AUDIO FIX
         let feedObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const video = entry.target.querySelector('video.post-media');
                 if(video) { 
                     if(entry.isIntersecting) { 
-                        video.muted = true; // explicitly mute before playing to bypass security
+                        // Sirf tab mute karo jab user ne explicit sound on na kiya ho
+                        if (video.dataset.unmuted === "true") {
+                            video.muted = false;
+                        } else {
+                            video.muted = true; 
+                        }
                         let playPromise = video.play();
                         if (playPromise !== undefined) { 
                             playPromise.catch(e => { console.log('Autoplay blocked:', e); }); 
                         }
                     } else { 
                         video.pause(); 
-                        video.currentTime = 0; // Reset video to start
+                        video.currentTime = 0; 
                     } 
                 }
             });
-        }, { threshold: 0.3 }); // Threshold lowered so it triggers early
+        }, { threshold: 0.3 }); 
 
         async function switchFeedFilter(mode) {
             currentFeedMode = mode;
@@ -862,14 +866,18 @@
             renderFeedDOM();
         }
 
+        // FIREBASE READ ERROR FIX
         function loadFeed() {
             db.ref('posts').on('value', async (snap) => {
                 let posts = []; if(snap.exists()) { snap.forEach(child => { let p = child.val(); p.id = child.key; posts.push(p); }); } posts.reverse(); 
                 for(let i=0; i<posts.length; i++) {
-                    let uSnap = await db.ref(`users/${posts[i].uid}`).once('value');
-                    posts[i].author = uSnap.exists() ? uSnap.val() : { displayName: "User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" };
+                    let uSnap = await db.ref(`users/${posts[i].uid}`).once('value').catch(()=>null);
+                    posts[i].author = (uSnap && uSnap.exists()) ? uSnap.val() : { displayName: "User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" };
                 }
                 allPosts = posts; renderFeedDOM();
+            }, (error) => {
+                console.error("Firebase Read Error:", error);
+                document.getElementById('feedContainer').innerHTML = `<div style="padding: 100px 20px; text-align: center; color: #ff4757; font-weight: bold;"><i class="fa-solid fa-triangle-exclamation" style="font-size:30px; margin-bottom:10px;"></i><br>Database Read Restricted.<br><span style="font-size:12px; font-weight: normal;">Please update Firebase rules to allow public reading to view posts without login.</span></div>`;
             });
         }
 
@@ -886,8 +894,8 @@
 
             for(let post of postsToShow) {
                 let isLiked = false; if(currentUser) { let lSnap = await db.ref(`likes/${post.id}/${currentUser.uid}`).once('value'); isLiked = lSnap.exists(); }
-                let lCountSnap = await db.ref(`likes/${post.id}`).once('value'); let likeCount = lCountSnap.exists() ? Object.keys(lCountSnap.val()).length : 0;
-                let cCountSnap = await db.ref(`comments/${post.id}`).once('value'); let commentCount = cCountSnap.exists() ? Object.keys(cCountSnap.val()).length : 0;
+                let lCountSnap = await db.ref(`likes/${post.id}`).once('value').catch(()=>null); let likeCount = (lCountSnap && lCountSnap.exists()) ? Object.keys(lCountSnap.val()).length : 0;
+                let cCountSnap = await db.ref(`comments/${post.id}`).once('value').catch(()=>null); let commentCount = (cCountSnap && cCountSnap.exists()) ? Object.keys(cCountSnap.val()).length : 0;
                 let isFollowing = false; if(currentUser && post.uid !== currentUser.uid) { let flSnap = await db.ref(`follows/${currentUser.uid}/${post.uid}`).once('value'); isFollowing = flSnap.exists(); }
 
                 let isVideo = post.mediaUrl.match(/\.(mp4|webm|ogg|mov)$/i) || post.mediaUrl.includes('/video/');
@@ -895,14 +903,19 @@
                 let optimizedUrl = post.mediaUrl;
                 let posterUrl = post.mediaUrl;
                 
+                // Cloudinary Fix: Don't strip audio tags from videos
                 if (optimizedUrl.includes('cloudinary.com')) {
-                    optimizedUrl = optimizedUrl.replace('/upload/', '/upload/f_auto,q_auto:eco,w_500,c_limit/');
-                    posterUrl = post.mediaUrl.replace('/upload/', '/upload/f_auto,q_auto:eco,w_500,c_limit/').replace(/\.(mp4|webm|mov)$/i, '.jpg');
-                } else {
+                    if (isVideo) {
+                        optimizedUrl = optimizedUrl.replace('/upload/', '/upload/q_auto,vc_auto/');
+                        posterUrl = post.mediaUrl.replace('/upload/', '/upload/f_auto,q_auto,w_500/').replace(/\.(mp4|webm|mov)$/i, '.jpg');
+                    } else {
+                        optimizedUrl = optimizedUrl.replace('/upload/', '/upload/f_auto,q_auto:eco,w_500,c_limit/');
+                        posterUrl = optimizedUrl;
+                    }
+                } else if(isVideo) {
                     posterUrl = posterUrl.replace(/\.(mp4|webm|mov)$/i, '.jpg');
                 }
 
-                // Important Fix: added AUTOPLAY MUTED directly to the element to bypass security
                 let mediaTag = isVideo ? `<video class="post-media" src="${optimizedUrl}" poster="${posterUrl}" preload="auto" autoplay loop playsinline muted></video>` : `<img class="post-media" src="${optimizedUrl}" loading="lazy">`;
 
                 let followBtnHtml = '';
@@ -916,7 +929,7 @@
                     <div class="post-overlay"></div>
                     <div class="reel-sidebar">
                         <button class="reel-action" onclick="requireAuth(()=>toggleLike('${post.id}'))"><i class="fa-solid fa-heart" id="like-icon-${post.id}" style="color: ${isLiked ? '#ff4757' : 'white'};"></i><span id="like-count-${post.id}">${likeCount}</span></button>
-                        <button class="reel-action" onclick="openComments('${post.id}')"><i class="fa-solid fa-comment-dots"></i><span>${commentCount}</span></button>
+                        <button class="reel-action" onclick="requireAuth(()=>openComments('${post.id}'))"><i class="fa-solid fa-comment-dots"></i><span>${commentCount}</span></button>
                         <button class="reel-action" onclick="shareVideo('${post.mediaUrl}')"><i class="fa-solid fa-share"></i><span>Share</span></button>
                     </div>
                     <div class="reel-info">
@@ -930,7 +943,7 @@
             document.querySelectorAll('.post-wrapper').forEach(el => feedObserver.observe(el));
         }
 
-        // Tap Handlers (Single tap = Play/Pause/Mute, Double tap = Like)
+        // Tap Handlers Audio State Fix
         function handleTap(event, touchArea, isVideo) {
             if(!touchArea.dataset.lastTap) touchArea.dataset.lastTap = 0;
             let currentTime = new Date().getTime(); let tapLength = currentTime - touchArea.dataset.lastTap;
@@ -943,11 +956,16 @@
                     if(isVideo) { 
                         let vid = touchArea.parentElement.querySelector('video.post-media'); 
                         if(vid) { 
-                            vid.muted = !vid.muted; // Single tap toggles sound
+                            vid.muted = !vid.muted; 
                             if(!vid.muted) { 
+                                vid.volume = 1.0;
+                                vid.dataset.unmuted = "true";
                                 showToast("Sound On 🔊", "info");
+                            } else {
+                                vid.dataset.unmuted = "false";
+                                showToast("Sound Off 🔇", "info");
                             }
-                            vid.play().catch(e=>{}); // Force play if it was stuck
+                            vid.play().catch(e=>{}); 
                         } 
                     } 
                 }, 300); 
@@ -995,8 +1013,8 @@
                 if(!snap.exists()) { container.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-dim);">No comments yet. Be the first!</div>'; return; }
                 let comments = []; snap.forEach(c => { comments.push(c.val()); });
                 for(let c of comments) {
-                    let uSnap = await db.ref(`users/${c.uid}`).once('value');
-                    let author = uSnap.exists() ? uSnap.val() : { displayName: "User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" };
+                    let uSnap = await db.ref(`users/${c.uid}`).once('value').catch(()=>null);
+                    let author = (uSnap && uSnap.exists()) ? uSnap.val() : { displayName: "User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" };
                     container.innerHTML += `<div class="comment-item"><img src="${author.photoURL}"><div class="comment-text-box"><div class="comment-author">${author.displayName}</div><div>${c.text}</div></div></div>`;
                 }
                 container.scrollTop = container.scrollHeight;
@@ -1020,8 +1038,8 @@
                 convos.sort((a,b) => b.timestamp - a.timestamp);
 
                 for(let c of convos) {
-                    let uSnap = await db.ref(`users/${c.targetUid}`).once('value');
-                    let user = uSnap.exists() ? uSnap.val() : { displayName: "User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" };
+                    let uSnap = await db.ref(`users/${c.targetUid}`).once('value').catch(()=>null);
+                    let user = (uSnap && uSnap.exists()) ? uSnap.val() : { displayName: "User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" };
                     container.innerHTML += `<div class="inbox-item" onclick="openChat('${c.targetUid}')"><img src="${user.photoURL}"><div class="inbox-item-info"><div class="inbox-item-name">${user.displayName}</div><div class="inbox-item-msg">${c.lastMessage}</div></div></div>`;
                 }
             });
@@ -1029,8 +1047,8 @@
 
         async function openChat(targetUid) {
             currentChatTargetUid = targetUid;
-            let uSnap = await db.ref(`users/${targetUid}`).once('value');
-            let user = uSnap.exists() ? uSnap.val() : { displayName: "User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" };
+            let uSnap = await db.ref(`users/${targetUid}`).once('value').catch(()=>null);
+            let user = (uSnap && uSnap.exists()) ? uSnap.val() : { displayName: "User", photoURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png" };
             
             document.getElementById('dmHeaderAvatar').src = user.photoURL; document.getElementById('dmHeaderName').innerText = user.displayName;
             let ov = document.getElementById('chatScreenOverlay'); ov.classList.add('active');
